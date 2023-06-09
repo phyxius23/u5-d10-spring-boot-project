@@ -3,7 +3,7 @@ package it.piattaformaaziendale.u5d10springbootproject.auth;
 import java.io.IOException;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+// import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -45,22 +45,18 @@ public class JWTAuthFilter extends OncePerRequestFilter {
     // 3.0 Estraggo l'email dal token e cerco l'utente
     String email = JwtTools.extractSubject(accessToken);
     System.out.println("******************************** " + email);
-    try {
-      Utente utente = utentiService.findByEmail(email);
+    Utente utente = utentiService.findByEmail(email);
 
-      // 3.1 Aggiungo l'utente al SecurityContextHolder
+    // 3.1 Aggiungo l'utente al SecurityContextHolder
 
-      UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(utente, null,
-          utente.getAuthorities());
-      authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(utente, null,
+        utente.getAuthorities());
+    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-      SecurityContextHolder.getContext().setAuthentication(authToken);
+    SecurityContextHolder.getContext().setAuthentication(authToken);
 
-      // 3.2 puoi procedere al prossimo blocco della filterChain
-      filterChain.doFilter(request, response);
-    } catch (NotFoundException e) {
-      e.printStackTrace();
-    }
+    // 3.2 puoi procedere al prossimo blocco della filterChain
+    filterChain.doFilter(request, response);
 
     // 4. Se non OK -> 401 ("Per favore effettua di nuovo il login")
   }

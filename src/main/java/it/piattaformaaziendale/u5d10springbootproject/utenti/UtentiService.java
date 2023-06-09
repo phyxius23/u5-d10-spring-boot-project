@@ -3,7 +3,7 @@ package it.piattaformaaziendale.u5d10springbootproject.utenti;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+// import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import it.piattaformaaziendale.u5d10springbootproject.exceptions.BadRequestException;
+import it.piattaformaaziendale.u5d10springbootproject.exceptions.NotFoundException;
 import it.piattaformaaziendale.u5d10springbootproject.utenti.payload.UtenteRegistrazionePayload;
 
 @Service
@@ -31,10 +32,9 @@ public class UtentiService {
   // cerca passando ID
   public Utente findById(UUID id) throws NotFoundException {
     // metodo che non mi permette di resitituire un messaggio all'eccezione
-    // return utentiRepo.findById(id).orElseThrow(() -> new
-    // NotFoundException("Utente non trovato!"));
+    return utentiRepo.findById(id).orElseThrow(() -> new NotFoundException("Utente non trovato!"));
 
-    return utentiRepo.findById(id).orElseThrow(() -> new NotFoundException());
+    // return utentiRepo.findById(id).orElseThrow(() -> new NotFoundException());
   }
 
   // cerca passando ID e modifica
@@ -70,7 +70,7 @@ public class UtentiService {
 
   // cerca per email => metodo implementato per poter gestire il login
   public Utente findByEmail(String email) throws NotFoundException {
-    return utentiRepo.findByEmail(email).orElseThrow(() -> new NotFoundException());
+    return utentiRepo.findByEmail(email).orElseThrow(() -> new NotFoundException("Email non trovata"));
   }
 
 }

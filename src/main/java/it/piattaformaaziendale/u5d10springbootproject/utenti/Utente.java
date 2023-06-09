@@ -17,10 +17,12 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @Entity
 @Table(name = "utenti")
+@NoArgsConstructor
 public class Utente implements UserDetails {
 
   // Attributi
@@ -50,7 +52,6 @@ public class Utente implements UserDetails {
 
   }
 
-  // ******* METODI DA TESTARE *************
   @Override
   public Collection<? extends GrantedAuthority> getAuthorities() {
 
