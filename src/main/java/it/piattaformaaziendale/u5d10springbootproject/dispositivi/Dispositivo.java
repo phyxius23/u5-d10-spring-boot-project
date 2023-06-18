@@ -10,38 +10,40 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 @Entity
 @Table(name = "dispositivi")
 public class Dispositivo {
 
-  // Attributi
-  @Id
-  @GeneratedValue
-  private UUID id;
+	// attributi
+	@Id
+	@GeneratedValue
+	private UUID id;
 
-  @NotNull
-  private String description;
+	@Enumerated(EnumType.STRING)
+	private TipoDispositivo tipoDispositivo;
 
-  @Enumerated(EnumType.STRING)
-  private TipoDispositivo tipoDispositivo;
+	@Enumerated(EnumType.STRING)
+	private StatoDispositivo statoDispositivo;
 
-  @Enumerated(EnumType.STRING)
-  private StatoDispositivo statoDispositivo;
+	@ManyToOne
+	private Utente utente;
 
-  @ManyToOne
-  private Utente utente;
+	// costruttore senza utente perchè la presenza del dispositivo nel DB non è vincolata 
+	// alla sua assegnazione ad un utente
+	public Dispositivo(TipoDispositivo tipoDispositivo) {
+		this.tipoDispositivo = tipoDispositivo;
+		this.statoDispositivo = StatoDispositivo.DISPONIBILE;
+	}
 
-  // Costruttore
-  public Dispositivo(@NotNull String description, TipoDispositivo tipoDispositivo, StatoDispositivo statoDispositivo,
-      Utente utente) {
-    this.description = description;
-    this.tipoDispositivo = tipoDispositivo;
-    this.statoDispositivo = statoDispositivo;
-    this.utente = null;
-  }
+	public Dispositivo(TipoDispositivo tipoDispositivo, StatoDispositivo statoDispositivo, Utente utente) {
+		this.tipoDispositivo = tipoDispositivo;
+		this.statoDispositivo = statoDispositivo;
+		this.utente = utente;
+	}
 
 }

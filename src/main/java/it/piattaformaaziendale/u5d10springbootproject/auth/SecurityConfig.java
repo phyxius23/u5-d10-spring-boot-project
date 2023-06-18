@@ -13,23 +13,24 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 public class SecurityConfig {
 
-  @Autowired
-  JWTAuthFilter jwtAuthFilter;
+	@Autowired
+	JWTAuthFilter jwtAuthFilter;
 
-  @Bean
-  SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-    http.cors(c -> c.disable());
+	@Bean
+	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-    http.csrf(c -> c.disable());
+		// qui sotto andrò ad abilitare e disattivare le funzioni di cui avrò o non avrò bisogno
+		http.cors(c -> c.disable()); //=> disattivo i cors
+		http.csrf(c -> c.disable()); //=> disattivo i csrf
+		http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)); //=> disabilito le sessioni
 
-    http.authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**").permitAll());
-    http.authorizeHttpRequests(auth -> auth.requestMatchers("/utenti/**").authenticated());
-    http.authorizeHttpRequests(auth -> auth.requestMatchers("/dispositivi/**").authenticated());
+		// qui sotto andrò ad aggiungere le autorizzazioni
+		http.authorizeHttpRequests(auth -> auth.requestMatchers("/auth/**").permitAll());
+		http.authorizeHttpRequests(auth -> auth.requestMatchers("/utenti/**").authenticated());
+		http.authorizeHttpRequests(auth -> auth.requestMatchers("/dispositivi/**").authenticated());
 
-    http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+		http.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
-    http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-
-    return http.build();
-  }
+		return http.build();
+	}
 }

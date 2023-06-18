@@ -5,53 +5,58 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import it.piattaformaaziendale.u5d10springbootproject.exceptions.UnauthorizedException;
-import it.piattaformaaziendale.u5d10springbootproject.utenti.Utente;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.security.Keys;
+import it.piattaformaaziendale.u5d10springbootproject.exceptions.UnauthorizedException;
+import it.piattaformaaziendale.u5d10springbootproject.utenti.Utente;
 
 @Component
 public class JwtTools {
 
-  // Attributi
-  private static String secret;
-  private static int expiration;
+	//recupero secretKey e expirationKey dall'application.properties
+	private static String secret;
+	private static int expiration;
 
-  @Value("${spring.application.jwt.secret}")
-  public void setSecret(String secretKey) {
-    secret = secretKey;
-  }
+	@Value("${spring.application.jwt.secret}")
+	public void setSecret(String s) {
+		secret = s;
+	}
 
-  @Value("${spring.application.jwt.expirationindays}")
-  public void setExpiration(String expirationInDays) {
-    expiration = Integer.parseInt(expirationInDays) * 24 * 60 * 60 * 1000;
-  }
+	@Value("${spring.application.jwt.expiration}")
+	public void setExpiration(String e) {
+		expiration = Integer.parseInt(e) * 24 * 60 * 60 * 1000; //=> ho trasformato il valore in millisecondi 
+	}
 
-  static public String createToken(Utente u) {
-    String token = Jwts.builder().setSubject(u.getEmail()).setIssuedAt(new Date(System.currentTimeMillis()))
-        .setExpiration(new Date(System.currentTimeMillis() + expiration))
-        .signWith(Keys.hmacShaKeyFor(secret.getBytes())).compact();
-    return token;
-  }
+	// metodo che crea un token
+	static public String createToken(Utente u) {
+		String token = Jwts.builder() 																									 //=> Jwts è la libreria che mi serve - builder() per creare il token
+				.setSubject(u.getEmail()) 																									 //=> setSubject il proprietario del token
+				.setIssuedAt(new Date(System.currentTimeMillis())) 													 //=> setIssuedAt() quando è stato emesso il token (trasformato in millisecondi)
+				.setExpiration(new Date(System.currentTimeMillis() + expiration))						 //=> setExpiration() quando scade il token (trasformato in millisecondi)
+				.signWith(Keys.hmacShaKeyFor(secret.getBytes())) 														 //=> signWith() aggiungo la firma del token, l'unica cosa che devo sapere di questa riga è che devo passare il "segreto" trasfomato in bytes all'algoritmo HMACSHA256
+				.compact(); 																																 //=> compact() ????????
+		return token;
+	}
 
-  static public void isTokenValid(String token) {
-    try {
-      Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(secret.getBytes())).build().parse(token);
+	//metodo che verifica se il token è valido 
+	static public void isTokenValid(String token) {
+		try {
+			Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(secret.getBytes())).build().parse(token);
+		} catch (MalformedJwtException e) { //=> mi lancia una eccezione se il token è malformato (che vuol dire?)
+			throw new UnauthorizedException("Il token è stato manipolato, non è valido");
+		} catch (ExpiredJwtException e) { //=> mi lancia una eccezione se il token è scaduto 
+			throw new UnauthorizedException("Il token è scaduto");
+		} catch (Exception e) {
+			throw new UnauthorizedException("Problema con il token. Per favore esegui di nuovo l'accesso.");
+		}
+	}
 
-    } catch (MalformedJwtException e) {
-      throw new UnauthorizedException("Il token non è valido");
-    } catch (ExpiredJwtException e) {
-      throw new UnauthorizedException("Il token è scaduto");
-    } catch (Exception e) {
-      throw new UnauthorizedException("Problemi col token, per favore effettua di nuovo il login");
-    }
-  }
-
-  static public String extractSubject(String token) { // Nel nostro caso il subject è l'email dell'utente
-    return Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(secret.getBytes())).build().parseClaimsJws(token)
-        .getBody().getSubject();
-  }
+	//metodo che estrae il subject (in questo caso l'email) dal nostro token
+	static public String extractSubject(String token) {
+		return Jwts.parserBuilder().setSigningKey(Keys.hmacShaKeyFor(secret.getBytes())).build().parseClaimsJws(token)
+				.getBody().getSubject();
+	}
 
 }
